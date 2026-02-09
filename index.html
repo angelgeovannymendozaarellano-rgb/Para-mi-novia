@@ -2,222 +2,416 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sorpresa de San Valentín 🎁💜</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
+        /* --- ESTILOS BASE --- */
         body {
             font-family: 'Montserrat', sans-serif;
             background: radial-gradient(circle at center, #300018 0%, #100020 100%);
             color: #f3e5f5;
             margin: 0;
-            overflow-x: hidden;
+            overflow: hidden; /* Evita scroll en la intro */
             min-height: 100vh;
+            touch-action: manipulation; /* Mejora la respuesta táctil */
         }
 
-        /* Pantalla de Inicio */
+        /* --- PANTALLA DE INICIO --- */
         #pantalla-inicio {
-            position: fixed; inset: 0;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(45deg, #1a0033, #4b0026);
-            z-index: 9999; display: flex; flex-direction: column;
+            z-index: 9999;
+            display: flex; flex-direction: column;
             justify-content: center; align-items: center; text-align: center;
+            transition: opacity 0.8s ease-out;
         }
 
+        /* Botón blindado para móviles */
         .btn-comenzar {
-            background: #e91e63; color: white; padding: 20px 45px;
-            border-radius: 50px; font-size: 1.5rem; font-weight: bold;
-            cursor: pointer; box-shadow: 0 0 30px rgba(233, 30, 99, 0.5);
-            transition: 0.3s;
+            background: #e91e63; color: white; 
+            padding: 20px 50px;
+            border-radius: 50px; 
+            font-size: 1.5rem; font-weight: bold;
+            box-shadow: 0 0 30px rgba(233, 30, 99, 0.6);
+            border: 2px solid #ff80ab;
+            cursor: pointer;
+            z-index: 10000; /* Siempre encima */
+            position: relative;
+            pointer-events: auto; /* Fuerza la interactividad */
+            -webkit-tap-highlight-color: transparent; /* Quita el cuadro azul al tocar */
+            user-select: none;
         }
+        .btn-comenzar:active { transform: scale(0.95); background: #c2185b; }
 
-        /* Botón de Música Flotante */
+        /* Botón Música */
         #btn-musica {
             position: fixed; top: 20px; right: 20px;
             z-index: 10001; background: #e91e63;
-            width: 55px; height: 55px; border-radius: 50%;
+            width: 50px; height: 50px; border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
             cursor: pointer; box-shadow: 0 0 15px rgba(233, 30, 99, 0.7);
             font-size: 1.5rem; border: 2px solid white;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+            animation: pulse-music 2s infinite;
         }
 
+        /* --- SECCIÓN CAJA (CINEMÁTICA) --- */
         #caja-seccion {
             position: fixed; inset: 0; z-index: 5000;
             background: radial-gradient(circle at center, #300018 0%, #100020 100%);
-            display: none; flex-direction: column; justify-content: center; align-items: center;
+            display: none;
+            flex-direction: column; justify-content: center; align-items: center;
+            perspective: 1200px;
+            opacity: 0; transition: opacity 0.5s;
         }
 
-        /* CAJA 3D */
-        .gift-container { position: relative; width: 180px; height: 180px; perspective: 1000px; cursor: pointer; }
-        .gift-box { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 1s; transform: rotateX(-15deg) rotateY(15deg); }
-        .gift-side { position: absolute; width: 180px; height: 180px; background: #e91e63; border: 1px solid #c2185b; }
-        .front { transform: rotateY(0deg) translateZ(90px); }
-        .back { transform: rotateY(180deg) translateZ(90px); }
-        .left { transform: rotateY(-90deg) translateZ(90px); }
-        .right { transform: rotateY(90deg) translateZ(90px); }
-        .top { transform: rotateX(90deg) translateZ(90px); background: #ff4081; z-index: 10; transition: 0.8s; }
-        .bottom { transform: rotateX(-90deg) translateZ(90px); background: #880e4f; }
-        .ribbon-v { position: absolute; width: 30px; height: 100%; background: #ffd700; left: 75px; }
-        .ribbon-h { position: absolute; width: 100%; height: 30px; background: #ffd700; top: 75px; }
-        .gift-container.open .top { transform: rotateX(110deg) translateZ(150px) translateY(-150px); opacity: 0; }
+        .gift-container {
+            position: relative; width: 220px; height: 220px;
+            transform-style: preserve-3d;
+            transform: rotateX(-20deg) rotateY(30deg);
+            transition: transform 1s;
+            cursor: pointer;
+            margin-top: 40px;
+        }
 
-        /* GLOBOS */
-        .balloon { position: absolute; bottom: 50px; width: var(--sz); height: calc(var(--sz) * 1.2); border-radius: 50%; z-index: 6000; animation: balloonUp var(--dur) ease-in forwards; opacity: 0.9; }
-        @keyframes balloonUp { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-120vh) translateX(var(--x-move)) scale(1.2); opacity: 0; } }
+        .gift-box { position: absolute; width: 100%; height: 100%; transform-style: preserve-3d; }
+        
+        .side {
+            position: absolute; width: 220px; height: 220px;
+            background: #d81b60; border: 1px solid #ad1457;
+            display: flex; justify-content: center; align-items: center;
+            transition: transform 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
 
-        /* CONTENIDO */
+        /* Listones */
+        .ribbon-v { position: absolute; width: 50px; height: 100%; background: #ffd600; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
+        .ribbon-h { position: absolute; width: 100%; height: 50px; background: #ffd600; top: 85px; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
+
+        .front  { transform: rotateY(0deg) translateZ(110px); }
+        .back   { transform: rotateY(180deg) translateZ(110px); }
+        .left   { transform: rotateY(-90deg) translateZ(110px); }
+        .right  { transform: rotateY(90deg) translateZ(110px); }
+        .bottom { transform: rotateX(-90deg) translateZ(110px); background: #880e4f; }
+
+        .top {
+            position: absolute; width: 224px; height: 224px;
+            background: #ec407a; top: -112px; left: -2px;
+            transform: rotateX(90deg) translateZ(112px);
+            z-index: 20; transform-style: preserve-3d;
+            transition: transform 1.2s cubic-bezier(0.6, -0.28, 0.735, 0.045);
+        }
+
+        /* Moño Interactivo */
+        .bow-container {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) translateZ(1px);
+            width: 100%; height: 100%;
+        }
+        .bow {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px; height: 80px;
+            animation: bounce-bow 2s infinite;
+        }
+        @keyframes bounce-bow { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.1); } }
+        
+        .bow-loop {
+            position: absolute; width: 50px; height: 70px;
+            border: 10px solid #ffd600; border-radius: 50%; top: 0;
+            transition: 0.5s;
+        }
+        .loop-left { left: -10px; transform: rotate(-45deg); border-right: none; }
+        .loop-right { right: -10px; transform: rotate(45deg); border-left: none; }
+        .knot {
+            position: absolute; width: 25px; height: 25px; background: #ffea00;
+            border-radius: 50%; top: 25px; left: 27px; z-index: 5;
+        }
+
+        /* --- ANIMACIONES APERTURA --- */
+        .untie .loop-left { transform: translateX(-60px) rotate(-90deg); opacity: 0; }
+        .untie .loop-right { transform: translateX(60px) rotate(90deg); opacity: 0; }
+        .untie .knot { transform: scale(0); }
+        .untie .ribbon-v, .untie .ribbon-h { opacity: 0; transition: 0.5s; }
+        
+        .open-lid .top { transform: rotateX(120deg) translateZ(300px) translateY(-500px); opacity: 0; }
+        
+        .fall-sides .front { transform: rotateY(0deg) translateZ(110px) rotateX(-100deg); transform-origin: bottom; }
+        .fall-sides .back { transform: rotateY(180deg) translateZ(110px) rotateX(-100deg); transform-origin: bottom; }
+        .fall-sides .left { transform: rotateY(-90deg) translateZ(110px) rotateX(-100deg); transform-origin: bottom; }
+        .fall-sides .right { transform: rotateY(90deg) translateZ(110px) rotateX(-100deg); transform-origin: bottom; }
+
+        /* --- CONTENIDO PRINCIPAL --- */
         #main-content { display: none; opacity: 0; transition: 1.5s; width: 100%; flex-direction: column; align-items: center; padding-bottom: 100px; }
-        .foto-frame { width: 140px; height: 140px; border: 5px solid white; border-bottom: 20px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.5); transform: rotate(var(--rot)); margin: 10px; background: #ddd; overflow: hidden; }
-        .foto-frame img { width: 100%; height: 100%; object-fit: cover; }
-        .envelope-container { display: flex; align-items: flex-end; justify-content: center; gap: 30px; background: rgba(255, 255, 255, 0.05); padding: 40px 20px; border-radius: 30px; backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        
+        /* Jardín */
+        .flower-garden { display: flex; gap: 20px; margin-bottom: 20px; font-size: 3rem; margin-top: 20px; }
+        .flower { animation: sway 3s ease-in-out infinite; transform-origin: bottom center; }
+        @keyframes sway { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+
+        /* Timer */
+        .timer-container { background: rgba(255, 255, 255, 0.1); padding: 15px 25px; border-radius: 20px; backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.2); margin-bottom: 30px; text-align: center; }
+        .timer-grid { display: flex; gap: 15px; justify-content: center; margin-top: 10px; }
+        .timer-val { font-size: 1.5rem; font-weight: bold; color: #ff80ab; }
+        .timer-label { font-size: 0.7rem; text-transform: uppercase; opacity: 0.7; }
+
+        /* Elementos Finales */
+        canvas { max-width: 100%; height: auto; margin-bottom: 30px; filter: drop-shadow(0 0 10px #e91e63); }
+        .frase-especial { font-family: 'Dancing Script', cursive; font-size: 2rem; text-align: center; padding: 20px; text-shadow: 0 0 10px rgba(233, 30, 99, 0.8); margin-bottom: 20px; }
+
+        /* Sobres */
+        .envelope-container { display: flex; flex-direction: column; align-items: center; gap: 30px; background: rgba(255, 255, 255, 0.05); padding: 30px 20px; border-radius: 30px; width: 90%; max-width: 500px; }
         .envelope-wrapper { cursor: pointer; position: relative; }
-        .envelope { position: relative; background: #7b1fa2; border-radius: 0 0 10px 10px; z-index: 10; }
-        .envelope::before { content: ""; position: absolute; top: 0; z-index: 12; border-top: var(--flap-size) solid #e91e63; border-left: var(--side-size) solid transparent; border-right: var(--side-size) solid transparent; transform-origin: top; transition: 0.6s; }
+        .envelope { position: relative; background: #7b1fa2; border-radius: 0 0 10px 10px; z-index: 10; transition: 0.3s; }
+        .envelope::before { content: ""; position: absolute; top: 0; z-index: 12; border-top: var(--flap) solid #e91e63; border-left: var(--side) solid transparent; border-right: var(--side) solid transparent; transform-origin: top; transition: 0.6s; }
         .envelope.open::before { transform: rotateX(180deg); }
-        .letter { position: absolute; bottom: 5px; left: 5%; width: 90%; background: white; color: #2d004b; padding: 15px; border-radius: 5px; transition: 0.8s; max-height: 0; opacity: 0; overflow: hidden; }
-        .envelope.open .letter { transform: translateY(var(--letter-up)); z-index: 15; max-height: 400px; opacity: 1; padding: 20px; }
-        .main-env { --flap-size: 100px; --side-size: 140px; --letter-up: -240px; width: 280px; height: 160px; }
-        .mini-env { --flap-size: 35px; --side-size: 55px; --letter-up: -120px; width: 110px; height: 75px; }
+        
+        .letter { position: absolute; bottom: 5px; left: 5%; width: 90%; background: white; color: #2d004b; padding: 15px; border-radius: 5px; transition: 0.8s; max-height: 0; opacity: 0; overflow-y: auto; }
+        .envelope.open .letter { transform: translateY(var(--up)); z-index: 15; max-height: 400px; opacity: 1; padding: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        
+        .main-env { --flap: 80px; --side: 130px; --up: -300px; width: 260px; height: 150px; }
+        .mini-env { --flap: 40px; --side: 60px; --up: -120px; width: 120px; height: 80px; }
 
         .fuente-elegante { font-family: 'Dancing Script', cursive; }
+        .balloon { position: absolute; bottom: 50px; width: var(--sz); height: calc(var(--sz) * 1.2); border-radius: 50%; z-index: 6000; animation: balloonUp var(--dur) ease-in forwards; opacity: 0.9; }
+        @keyframes balloonUp { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-120vh) translateX(var(--x-move)) scale(1.2); opacity: 0; } }
         .falling-item { position: fixed; top: -10vh; animation: fall linear forwards; z-index: 2000; pointer-events: none; }
         @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <div id="btn-musica" onclick="abrirSpotify()">🎵</div>
+    <div id="btn-musica" onclick="window.open('https://open.spotify.com/playlist/37i9dQZF1DX7rOY2tFIX0n', '_blank')">🎵</div>
 
     <div id="pantalla-inicio">
         <div class="text-8xl mb-6 animate-bounce">🎁</div>
-        <h1 class="text-4xl text-white fuente-elegante mb-10 px-6">¿Preparada para tu sorpresa?</h1>
-        <button class="btn-comenzar" onclick="irACaja()">VER REGALO ✨</button>
+        <h1 class="text-4xl text-white fuente-elegante mb-10 px-4 leading-tight">¿Preparada para tu sorpresa?</h1>
+        <button id="btn-comenzar" class="btn-comenzar">VER REGALO ✨</button>
     </div>
 
     <div id="caja-seccion">
-        <p class="fuente-elegante text-2xl text-pink-200 mb-10 animate-pulse">Toca la caja para abrirla...</p>
-        <div class="gift-container" onclick="abrirCaja(this)">
-            <div class="gift-box">
-                <div class="gift-side front"><div class="ribbon-v"></div></div>
-                <div class="gift-side back"><div class="ribbon-v"></div></div>
-                <div class="gift-side left"><div class="ribbon-h"></div></div>
-                <div class="gift-side right"><div class="ribbon-h"></div></div>
-                <div class="gift-side top"><div class="ribbon-v"></div><div class="ribbon-h"></div></div>
-                <div class="gift-side bottom"></div>
+        <p class="fuente-elegante text-2xl text-pink-200 mb-10 animate-pulse">Toca el moño...</p>
+        
+        <div class="gift-container" id="gift-container">
+            <div class="top" id="lid">
+                <div class="ribbon-v"></div>
+                <div class="ribbon-h"></div>
+                <div class="bow-container">
+                    <div class="bow">
+                        <div class="bow-loop loop-left"></div>
+                        <div class="bow-loop loop-right"></div>
+                        <div class="knot"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="gift-box" id="box-body">
+                <div class="side front"><div class="ribbon-v"></div></div>
+                <div class="side back"><div class="ribbon-v"></div></div>
+                <div class="side left"><div class="ribbon-h"></div></div>
+                <div class="side right"><div class="ribbon-h"></div></div>
+                <div class="side bottom"></div>
             </div>
             <div id="globos-container"></div>
         </div>
     </div>
 
     <div id="main-content">
-        <h1 class="text-5xl md:text-6xl text-white fuente-elegante text-center mb-8 mt-10">¡Feliz San Valentín! 💖</h1>
+        <h1 class="text-5xl text-white fuente-elegante text-center mb-4 mt-8">¡Feliz San Valentín! 💖</h1>
         
-        <div class="flex flex-wrap justify-center gap-4 mb-12">
-            <div class="foto-frame" style="--rot: -5deg;"><img src="https://via.placeholder.com/150/e91e63/ffffff?text=Foto+1" alt="1"></div>
-            <div class="foto-frame" style="--rot: 5deg;"><img src="https://via.placeholder.com/150/7b1fa2/ffffff?text=Foto+2" alt="2"></div>
-            <div class="foto-frame" style="--rot: -3deg;"><img src="https://via.placeholder.com/150/ff4081/ffffff?text=Foto+3" alt="3"></div>
+        <div class="flower-garden">
+            <span class="flower">🌹</span><span class="flower">🌷</span><span class="flower">🌸</span><span class="flower">🌻</span>
         </div>
 
-        <img src="https://i.postimg.cc/FHKbPGy6/1000056831-removebg-preview.png" alt="Corazón" class="w-64 md:w-80 mb-12 drop-shadow-2xl animate-pulse">
+        <div class="timer-container">
+            <p class="text-sm font-semibold text-pink-200 uppercase tracking-widest">Tiempo Juntos</p>
+            <div class="timer-grid">
+                <div class="timer-item"><span id="days" class="timer-val">0</span><span class="timer-label">Días</span></div>
+                <div class="timer-item"><span id="hours" class="timer-val">0</span><span class="timer-label">Hs</span></div>
+                <div class="timer-item"><span id="minutes" class="timer-val">0</span><span class="timer-label">Min</span></div>
+                <div class="timer-item"><span id="seconds" class="timer-val">0</span><span class="timer-label">Seg</span></div>
+            </div>
+        </div>
 
-        <div class="envelope-container flex-col md:flex-row items-center md:items-end">
-            <div class="envelope-wrapper" onclick="toggleMain()">
-                <div class="envelope main-env" id="main-envelope">
-                    <div class="letter"><p id="main-texto" class="text-sm md:text-base text-gray-800 text-center italic font-medium"></p></div>
+        <div class="frase-especial">
+            SI DIOS TE HIZO MI NOVIA ES QUE NO DEBO SER TAN MALO 💜
+        </div>
+
+        <canvas id="canvasCorazon"></canvas>
+
+        <div class="envelope-container">
+            <div class="envelope-wrapper" id="env-main">
+                <div class="envelope main-env">
+                    <div class="letter"><p id="main-texto" class="text-sm text-gray-800 italic whitespace-pre-line"></p></div>
                 </div>
                 <p class="text-center text-pink-200 mt-4 text-xs tracking-widest uppercase">Leer carta 💌</p>
             </div>
-            <div class="envelope-wrapper" onclick="toggleMini()">
-                <div class="envelope mini-env" id="mini-envelope">
-                    <div class="letter"><p id="mini-texto" class="text-center font-bold text-pink-900 text-xs italic"></p></div>
+
+            <div class="envelope-wrapper" id="env-mini">
+                <div class="envelope mini-env">
+                    <div class="letter"><p id="mini-texto" class="text-center font-bold text-pink-900 text-xs"></p></div>
                 </div>
                 <p class="text-center text-pink-200 mt-2 text-[10px] tracking-widest uppercase">Detalle 💋</p>
             </div>
         </div>
 
-        <div class="mt-16 text-center px-6">
-            <h2 class="fuente-elegante text-4xl text-pink-300 mb-4">Eres mi persona favorita</h2>
-            <p class="text-pink-100 max-w-md mx-auto italic opacity-80">"En un mundo lleno de gente, mis ojos siempre te buscarán a ti."</p>
-        </div>
-        <p class="text-pink-400 mt-20 fuente-elegante text-2xl pb-10">Siempre juntos... ❤️</p>
+        <p class="text-pink-400 mt-12 fuente-elegante text-xl pb-10">Desde el 11 de Julio de 2025... ❤️</p>
     </div>
 
     <script>
-        const spotifyLink = "Https://open.spotify.com/playlist/0iJV60p2hr1koM1vNnMTFt?si=ZtRByQYPS52I5k_gjbgCgw&pt=4fa207f978d220537f8a7c58c6637fed&pi=QyuD6dVLTp-i-"; 
-        const textoCarta = "Mi niña hermosa, en este 14 de febrero quiero decirte que eres el regalo más bonito que la vida me ha dado. No necesito un día especial para amarte, porque te amo cada segundo. ¡Feliz San Valentín, reina!";
-        const frasesMini = ["Eres mi mundo. 🌎", "Un besito. 💋", "Te amo infinito. ❤️"];
+        // --- 1. CONFIGURACIÓN INICIAL SEGURA ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Asignar eventos de botón de forma segura para móviles
+            const btn = document.getElementById('btn-comenzar');
+            if(btn) {
+                // Evento Touch para móviles (respuesta rápida)
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault(); // Evita doble disparo
+                    transicionCaja();
+                }, {passive: false});
+                
+                // Evento Click para PC/Vista previa estándar
+                btn.addEventListener('click', transicionCaja);
+            }
 
-        function abrirSpotify() {
-            window.open(spotifyLink, '_blank');
+            // Asignar evento a la caja
+            const lid = document.getElementById('lid');
+            if(lid) {
+                lid.addEventListener('touchstart', (e) => { e.preventDefault(); abrirRegalo(); }, {passive: false});
+                lid.addEventListener('click', abrirRegalo);
+            }
+
+            // Asignar eventos a los sobres
+            document.getElementById('env-main').addEventListener('click', toggleMain);
+            document.getElementById('env-mini').addEventListener('click', toggleMini);
+
+            // Iniciar animaciones de fondo
+            setInterval(actualizarCronometro, 1000);
+        });
+
+        const fechaInicio = new Date("July 11, 2025 00:00:00").getTime();
+        let boxOpened = false;
+
+        // --- 2. TRANSICIÓN A LA CAJA ---
+        function transicionCaja() {
+            const pantallaInicio = document.getElementById('pantalla-inicio');
+            const cajaSeccion = document.getElementById('caja-seccion');
+
+            pantallaInicio.style.opacity = '0';
+            setTimeout(() => {
+                pantallaInicio.style.display = 'none';
+                cajaSeccion.style.display = 'flex';
+                // Forzar reflujo para que la transición CSS funcione
+                void cajaSeccion.offsetWidth; 
+                cajaSeccion.style.opacity = '1';
+            }, 800);
         }
 
-        function irACaja() {
-            document.getElementById('pantalla-inicio').style.display = 'none';
-            document.getElementById('caja-seccion').style.display = 'flex';
+        // --- 3. CINEMÁTICA DE APERTURA ---
+        function abrirRegalo() {
+            if(boxOpened) return;
+            boxOpened = true;
+
+            const container = document.getElementById('gift-container');
+            const bow = document.querySelector('.bow');
+
+            // Parar animación del moño
+            bow.style.animation = 'none';
+
+            // Paso 1: Desatar
+            container.classList.add('untie');
+
+            // Paso 2: Volar tapa
+            setTimeout(() => {
+                container.classList.add('open-lid');
+                
+                // Paso 3: Caer paredes y globos
+                setTimeout(() => {
+                    container.classList.add('fall-sides');
+                    crearGlobos();
+
+                    // Paso 4: Ir al contenido
+                    setTimeout(() => {
+                        const caja = document.getElementById('caja-seccion');
+                        caja.style.opacity = '0';
+                        setTimeout(() => {
+                            caja.style.display = 'none';
+                            const main = document.getElementById('main-content');
+                            main.style.display = 'flex';
+                            document.body.style.overflowY = 'auto'; // Permitir scroll
+                            setTimeout(() => { 
+                                main.style.opacity = '1'; 
+                                initHeart(); 
+                            }, 100);
+                            setInterval(crearLluvia, 400);
+                        }, 1000);
+                    }, 3000);
+
+                }, 500);
+            }, 800);
         }
 
-        function abrirCaja(el) {
-            if (el.classList.contains('open')) return;
-            el.classList.add('open');
+        function crearGlobos() {
             const container = document.getElementById('globos-container');
-            for(let i=0; i<50; i++) {
+            for(let i=0; i<40; i++) {
                 const b = document.createElement('div');
                 b.className = 'balloon';
-                b.style.setProperty('--sz', `${Math.random()*30+20}px`);
-                b.style.backgroundColor = ['#ff4081','#e91e63','#7b1fa2','#ffd700','#ffffff'][Math.floor(Math.random()*5)];
-                b.style.left = '70px';
+                b.style.setProperty('--sz', (Math.random()*30+20) + 'px');
+                b.style.left = '50%';
+                b.style.backgroundColor = ['#ff4081', '#ffd700', '#e040fb', '#ffffff'][Math.floor(Math.random()*4)];
                 b.style.setProperty('--x-move', (Math.random()*600 - 300) + 'px');
-                b.style.setProperty('--dur', (Math.random()*2+2)+'s');
-                b.style.animationDelay = (Math.random()*0.8)+'s';
+                b.style.setProperty('--dur', (Math.random()*2 + 3) + 's');
                 container.appendChild(b);
             }
-            setTimeout(() => {
-                document.getElementById('caja-seccion').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('caja-seccion').style.display = 'none';
-                    const main = document.getElementById('main-content');
-                    main.style.display = 'flex';
-                    setTimeout(() => main.style.opacity = '1', 100);
-                    setInterval(crearCorazon, 300);
-                    document.body.style.overflow = "auto";
-                }, 800);
-            }, 3000);
         }
 
+        // --- 4. FUNCIONES DE CONTENIDO ---
+        const textoCarta = `Feliz 14 de febrero, amor mío.
+
+Hoy quiero decirte lo que siento sin miedo, porque tú te mereces cada palabra. Desde que llegaste, mis días tienen más sentido.
+
+Te pienso más de lo que imaginas y te elijo incluso en silencio. Me nace cuidarte, protegerte y amarte con todo lo que soy.
+
+Si supieras lo fuerte que late mi corazón por ti, entenderías que esto es para siempre. Te quiero en mi presente y en mi futuro.
+
+¿Quieres ser mi San Valentín? ❤️`;
+
+        const frasesMini = ["Eres mi mundo. 🌎", "Te amo infinito. ❤️", "Gracias por existir. ✨", "Siempre tú y yo. 💑"];
+
         function toggleMain() {
-            const env = document.getElementById('main-envelope');
-            if(!env.classList.contains('open')) { env.classList.add('open'); escribir('main-texto', textoCarta); }
-            else env.classList.remove('open');
+            const env = document.querySelector('.main-env');
+            if(!env.classList.contains('open')) {
+                env.classList.add('open');
+                escribir('main-texto', textoCarta);
+            } else {
+                env.classList.remove('open');
+            }
         }
 
         function toggleMini() {
-            const env = document.getElementById('mini-envelope');
-            if(!env.classList.contains('open')) { env.classList.add('open'); escribir('mini-texto', frasesMini[Math.floor(Math.random()*frasesMini.length)]); }
-            else env.classList.remove('open');
+            const env = document.querySelector('.mini-env');
+            if(!env.classList.contains('open')) {
+                env.classList.add('open');
+                escribir('mini-texto', frasesMini[Math.floor(Math.random()*frasesMini.length)]);
+            } else {
+                env.classList.remove('open');
+            }
         }
 
         function escribir(id, txt) {
-            let i = 0; const c = document.getElementById(id); c.innerHTML = "";
-            function type() { if(i < txt.length) { c.innerHTML += txt.charAt(i++); setTimeout(type, 35); } }
+            const el = document.getElementById(id);
+            el.innerHTML = "";
+            let i = 0;
+            function type() {
+                if(i < txt.length) {
+                    el.innerHTML += txt.charAt(i);
+                    i++;
+                    setTimeout(type, 25);
+                }
+            }
             type();
         }
 
-        function crearCorazon() {
-            const el = document.createElement('div');
-            el.className = 'falling-item';
-            el.innerHTML = ['❤️', '💖', '💜'][Math.floor(Math.random()*3)];
-            el.style.left = Math.random()*100 + "vw";
-            el.style.fontSize = (Math.random()*20+15)+"px";
-            el.style.animationDuration = (Math.random()*3+2)+"s";
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 5000);
-        }
-    </script>
-</body>
-</html>
+        // --- 5. VISUALES Y TIMER ---
+        function actualizarCronometro() {
+            const ahora = new Date().getTime();
+            const diff = ahora - fechaInicio;
